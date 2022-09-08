@@ -127,9 +127,9 @@ def main(argv):
     for (k, v) in opts:
         if k == '-c':
             codec = v
-    for line in fileinput.input(args, 'rb'):
-        line = latin2ascii(line.encode(codec, 'ignore'))
-        sys.stdout.write(line.encode('ascii', 'replace'))
+    for line in fileinput.input(args, mode='rb'):
+        line = latin2ascii(line.decode(codec, 'ignore'))
+        sys.stdout.write(line)
     return
 
 
