@@ -877,6 +877,8 @@ class PDFPageInterpreter:
         return
 
     def process_page(self, page):
+        print("process_page(self, page)")
+        print(self, page, page.rotate)
         if self.debug:
             logging.info('Processing page: %r' % page)
         (x0, y0, x1, y1) = page.mediabox
@@ -891,7 +893,7 @@ class PDFPageInterpreter:
         self.device.begin_page(page, ctm)
         self.render_contents(page.resources, page.contents, ctm=ctm)
         self.device.end_page(page)
-        return
+        return 1
 
     # render_contents(resources, streams, ctm)
     #   Render the content streams.

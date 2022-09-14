@@ -62,7 +62,6 @@ def handle_input_variables(
     # output option
     outfile = None
     outtype: Union[OutputType, None] = None
-    '''
     
     '''
     for (k, v) in options:
@@ -106,12 +105,14 @@ def handle_input_variables(
             ConverterParams.laparams.line_margin = float(v)
         elif k == '-F':
             ConverterParams.laparams.boxes_flow = float(v)
+    '''
+    #TODO HARDCODED VALUES
 
+    filenames = ["dummy.pdf"]
+    outfile = "testonetwothree.txt"
+    outtype = OutputType.TEXT
 
-        outfile = 'test.txt'
-        outtype = 'text'
-
-        convert_from_pdf(filenames, converter_params, outtype, outfile)
+    convert_from_pdf(filenames, converter_params, outtype, outfile)
 
 
 def convert_from_pdf(filenames: List[str],
@@ -119,10 +120,10 @@ def convert_from_pdf(filenames: List[str],
                      outtype: Union[OutputType, None] = None,
                      outfile: Union[str, None] = None) -> Union[None, int]:
 
-    PDFDocument.debug = params.debug
-    PDFParser.debug = params.debug
-    CMapDB.debug = params.debug
-    PDFPageInterpreter.debug = params.debug
+    #PDFDocument.debug = params.debug
+    #PDFParser.debug = params.debug
+    #CMapDB.debug = params.debug
+    #PDFPageInterpreter.debug = params.debug
     rsrcmgr = PDFResourceManager(caching=params.caching)
     if not outtype:
         outtype = OutputType.TEXT
@@ -138,6 +139,7 @@ def convert_from_pdf(filenames: List[str],
         open(outfile, 'w', encoding=params.encoding) if outfile else sys.stdout
     )
 
+    '''
     if outtype == OutputType.TEXT:
         device = TextConverter(rsrcmgr, outfp, laparams=params.laparams,
                                imagewriter=params.imagewriter)
@@ -156,22 +158,36 @@ def convert_from_pdf(filenames: List[str],
     else:
         _print_help_message()
         return 100
+    '''
+
+    #TODO, HARDCODED DEVICE
+    device = TextConverter(rsrcmgr, outfp, laparams=params.laparams,
+                               imagewriter=params.imagewriter)
+
+    print(filenames)
 
     for fname in filenames:
+        print("fname in filenames: " + fname)
         with open(fname, 'rb') as fp:
+            print("file "+fname+" opended as fp")
             interpreter = PDFPageInterpreter(rsrcmgr, device)
+            print(interpreter)
             for page in PDFPage.get_pages(fp, params.pagenos,
                                           maxpages=params.maxpages,
                                           password=params.password,
                                           caching=params.caching,
                                           check_extractable=True):
+                print("page in PDFPage.get_pages(...)")
                 page.rotate = (page.rotate + params.rotation) % 360
-                interpreter.process_page(page)
+                print("page.rotate pi"+str(page.rotate))
+                print(interpreter.process_page(page))
+
     device.close()
     outfp.close()
 
 
 def main(argv):
+    '''
     try:
         options, filenames = getopt.getopt(
             argv[1:],
@@ -184,6 +200,8 @@ def main(argv):
     if not filenames:
         _print_help_message()
         return 100
+    '''
+    handle_input_variables(None, None)
 
 
 if __name__ == '__main__':
