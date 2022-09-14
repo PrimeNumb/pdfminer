@@ -62,7 +62,9 @@ def handle_input_variables(
     # output option
     outfile = None
     outtype: Union[OutputType, None] = None
-
+    '''
+    
+    '''
     for (k, v) in options:
         if k == '-d':
             ConverterParams.debug += 1
@@ -104,6 +106,10 @@ def handle_input_variables(
             ConverterParams.laparams.line_margin = float(v)
         elif k == '-F':
             ConverterParams.laparams.boxes_flow = float(v)
+
+
+        outfile = 'test.txt'
+        outtype = 'text'
 
         convert_from_pdf(filenames, converter_params, outtype, outfile)
 
