@@ -1,1 +1,4 @@
 flake8
+line_profiler
+coverage
+memory_profiler
