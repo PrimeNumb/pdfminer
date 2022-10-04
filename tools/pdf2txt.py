@@ -57,7 +57,7 @@ def _print_help_message(command: str = ""):
 def handle_input_variables(
     options: List[Tuple[str, str]],
     filenames: List[str],
-    command_name: str = ""):\
+    command_name: str = ""): \
 
     # input option
     converter_params = ConverterParams(pagenos=set(), laparams=LAParams())
@@ -110,19 +110,18 @@ def handle_input_variables(
         elif k == '-h':
             ConverterParams.get_chapters = True
 
-        # Special considerations if the user wants to generate the book chapters as txt.
-        if ConverterParams.get_chapters:
-            chapters = split_by_chapters(filenames[0])
-            write_chapters_to_files(chapters)
-            return
-        convert_from_pdf(filenames, converter_params, outtype, outfile)
+    # Special considerations if the user wants to generate the book chapters as txt.
+    if ConverterParams.get_chapters:
+        chapters = split_by_chapters(filenames[0])
+        write_chapters_to_files(chapters, outfile)
+        return
+    convert_from_pdf(filenames, converter_params, outtype, outfile)
 
 
 def convert_from_pdf(filenames: List[str],
                      params: ConverterParams,
                      outtype: Union[OutputType, None] = None,
                      outfile: Union[str, None] = None) -> Union[None, int]:
-
     PDFDocument.debug = params.debug
     PDFParser.debug = params.debug
     CMapDB.debug = params.debug
@@ -188,16 +187,16 @@ def split_by_chapters(file_name: str) -> List[str]:
 
     for line_nr in range(0, len(lines) - 1):
 
-        curr_line = lines[line_nr]
-        next_line = lines[line_nr + 1]
+        curr_line, next_line = lines[line_nr], lines[line_nr + 1]
 
-        if 'Chapter' in curr_line and next_line == '\n':
-            is_number = re.compile(r'\d+$')  # Find number and only number
-            chapter_number = curr_line.split('Chapter')[1].strip()
+        if 'Chapter' in curr_line:
+            if next_line == '\n':
+                is_number = re.compile(r'\d+$')  # Find number and only number
+                chapter_number = curr_line.split('Chapter')[1].strip()
 
-            if is_number.match(chapter_number):
-                chapter += 1
-                chapters.append('')
+                if is_number.match(chapter_number):
+                    chapter += 1
+                    chapters.append('')
         chapters[chapter] += curr_line
 
     return chapters
