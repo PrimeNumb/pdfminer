@@ -85,13 +85,9 @@ class PngWriter:
         self.height = height
 
     def write(self, data):
-        
-        r = data[0::3]
-        g = data[1::3]
-        b = data[2::3]
+        it = iter(data)
+        rgb_vals = [*zip(it, it, it)]
         img = Image.new("RGB", (self.width, self.height))
-
-        rgb_vals = list(zip(r, g, b))
         img.putdata(rgb_vals)
         img.save(self.fp)
 
@@ -148,7 +144,7 @@ class ImageWriter:
                     i += width
             elif image.bits == 8 and image.colorspace[0] == LITERAL_DEVICE_RGB:
                 if self.png_mode:
-                    writer = PngWriter(fp.name, width, height, 'RGB')
+                    writer = PngWriter(fp.name, width, height)
                     data = stream.get_data()
                     writer.write(data)
                 else:
