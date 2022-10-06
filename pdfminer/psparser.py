@@ -3,7 +3,7 @@ import re
 import logging
 from .utils import choplist
 
-STRICT = 0
+STRICT = 1
 
 
 # PS Exceptions
@@ -179,15 +179,6 @@ class PSBaseParser:
     def tell(self):
         return self.bufpos + self.charpos
 
-    def poll(self, pos=None, n=80):
-        pos0 = self.fp.tell()
-        if not pos:
-            pos = self.bufpos + self.charpos
-        self.fp.seek(pos)
-        logging.info('poll(%d): %r' % (pos, self.fp.read(n)))
-        self.fp.seek(pos0)
-        return
-
     def seek(self, pos):
         """Seeks the parser to the given position.
         """
@@ -228,19 +219,19 @@ class PSBaseParser:
                 c = self.buf[self.charpos:self.charpos + 1]
                 # handle b'\r\n'
                 if c == b'\n':
-                    linebuf += c
-                    self.charpos += 1
+                    linebuf = linebuf + c
+                    self.charpos = self.charpos + 1
                 break
             m = EOL.search(self.buf, self.charpos)
             if m:
-                linebuf += self.buf[self.charpos:m.end(0)]
+                linebuf = linebuf + self.buf[self.charpos:m.end(0)]
                 self.charpos = m.end(0)
                 if linebuf[-1:] == b'\r':
                     eol = True
                 else:
                     break
             else:
-                linebuf += self.buf[self.charpos:]
+                linebuf = linebuf + self.buf[self.charpos:]
                 self.charpos = len(self.buf)
         if self.debug:
             logging.debug('nextline: %r, %r' % (linepos, linebuf))
@@ -322,10 +313,10 @@ class PSBaseParser:
     def _parse_comment(self, s, i):
         m = EOL.search(s, i)
         if not m:
-            self._curtoken += s[i:]
+            self._curtoken = self._curtoken + s[i:]
             return (self._parse_comment, len(s))
         j = m.start(0)
-        self._curtoken += s[i:j]
+        self._curtoken = self._curtoken + s[i:j]
         self._parse1 = self._parse_main
         # We ignore comments.
         # self._tokens.append(self._curtoken)
@@ -334,10 +325,10 @@ class PSBaseParser:
     def _parse_literal(self, s, i):
         m = END_LITERAL.search(s, i)
         if not m:
-            self._curtoken += s[i:]
+            self._curtoken = self._curtoken + s[i:]
             return len(s)
         j = m.start(0)
-        self._curtoken += s[i:j]
+        self._curtoken = self._curtoken + s[i:j]
         c = s[j:j + 1]
         if c == b'#':
             self.hex = b''
@@ -357,13 +348,13 @@ class PSBaseParser:
         return j
 
     def _parse_literal_hex(self, s, i):
-        c = s[i:i + 1]
+        c = s[i: i+1]
         if HEX.match(c) and len(self.hex) < 2:
-            self.hex += c
+            self.hex = self.hex + c
             return i + 1
         if self.hex:
             try:
-                self._curtoken += bytes([int(self.hex, 16)])
+                self._curtoken = self._curtoken + bytes([int(self.hex, 16)])
             except ValueError:
                 pass
         self._parse1 = self._parse_literal
@@ -372,13 +363,13 @@ class PSBaseParser:
     def _parse_number(self, s, i):
         m = END_NUMBER.search(s, i)
         if not m:
-            self._curtoken += s[i:]
+            self._curtoken = self._curtoken + s[i:]
             return len(s)
         j = m.start(0)
-        self._curtoken += s[i:j]
+        self._curtoken = self._curtoken + s[i:j]
         c = s[j:j + 1]
         if c == b'.':
-            self._curtoken += c
+            self._curtoken = self._curtoken + c
             self._parse1 = self._parse_float
             return j + 1
         try:
@@ -391,10 +382,10 @@ class PSBaseParser:
     def _parse_float(self, s, i):
         m = END_NUMBER.search(s, i)
         if not m:
-            self._curtoken += s[i:]
+            self._curtoken = self._curtoken + s[i:]
             return len(s)
         j = m.start(0)
-        self._curtoken += s[i:j]
+        self._curtoken = self._curtoken + s[i:j]
         try:
             self._add_token(float(self._curtoken))
         except ValueError:
@@ -405,10 +396,10 @@ class PSBaseParser:
     def _parse_keyword(self, s, i):
         m = END_KEYWORD.search(s, i)
         if not m:
-            self._curtoken += s[i:]
+            self._curtoken = self._curtoken + s[i:]
             return len(s)
         j = m.start(0)
-        self._curtoken += s[i:j]
+        self._curtoken = self._curtoken + s[i:j]
         if self._curtoken == b'true':
             token = True
         elif self._curtoken == b'false':
@@ -422,24 +413,24 @@ class PSBaseParser:
     def _parse_string(self, s, i):
         m = END_STRING.search(s, i)
         if not m:
-            self._curtoken += s[i:]
+            self._curtoken = self._curtoken + s[i:]
             return len(s)
         j = m.start(0)
-        self._curtoken += s[i:j]
+        self._curtoken = self._curtoken + s[i:j]
         c = s[j:j + 1]
         if c == b'\\':
             self.oct = b''
             self._parse1 = self._parse_string_1
             return j + 1
         if c == b'(':
-            self.paren += 1
-            self._curtoken += c
+            self.paren = self.paren + 1
+            self._curtoken = self._curtoken + c
             return j + 1
         if c == b')':
-            self.paren -= 1
+            self.paren = self.paren - 1
             # WTF, they said balanced parens need no special treatment.
             if self.paren:
-                self._curtoken += c
+                self._curtoken = self._curtoken + c
                 return j + 1
         self._add_token(self._curtoken)
         self._parse1 = self._parse_main
@@ -448,17 +439,17 @@ class PSBaseParser:
     def _parse_string_1(self, s, i):
         c = s[i:i + 1]
         if OCT_STRING.match(c) and len(self.oct) < 3:
-            self.oct += c
+            self.oct = self.oct + c
             return i + 1
         if self.oct:
             try:
-                self._curtoken += bytes([int(self.oct, 8)])
+                self._curtoken = self._curtoken + bytes([int(self.oct, 8)])
             except ValueError:
                 pass
             self._parse1 = self._parse_string
             return i
         if c in ESC_STRING:
-            self._curtoken += ESC_STRING[c]
+            self._curtoken = self._curtoken + ESC_STRING[c]
         self._parse1 = self._parse_string
         return i + 1
 
@@ -467,7 +458,7 @@ class PSBaseParser:
         if c == b'<':
             self._add_token(KEYWORD_DICT_BEGIN)
             self._parse1 = self._parse_main
-            i += 1
+            i = i + 1
         else:
             self._parse1 = self._parse_hexstring
         return i
@@ -476,17 +467,17 @@ class PSBaseParser:
         c = s[i:i + 1]
         if c == b'>':
             self._add_token(KEYWORD_DICT_END)
-            i += 1
+            i = i + 1
         self._parse1 = self._parse_main
         return i
 
     def _parse_hexstring(self, s, i):
         m = END_HEX_STRING.search(s, i)
         if not m:
-            self._curtoken += s[i:]
+            self._curtoken = self._curtoken + s[i:]
             return len(s)
         j = m.start(0)
-        self._curtoken += s[i:j]
+        self._curtoken = self._curtoken + s[i:j]
         try:
             token = HEX_PAIR.sub(lambda m: bytes([int(m.group(0), 16)]),
                                  SPC.sub(b'', self._curtoken))
