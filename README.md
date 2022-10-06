@@ -69,6 +69,7 @@ restricted PDF documents.
   * `-L line_margin` : Specifies the line margin.
   * `-F boxes_flow` : Specifies the box flow ratio.
   * `-d` : Turns on Debug output.
+  * `-X`: Extracted images are saved as .png files
   * `-h` : Separates the output text into different files based on chapters.
 
 ### dumppdf.py
@@ -90,6 +91,12 @@ It dumps all the internal contents in pseudo-XML format.
   * `-t` : Text mode. Dumps the streams in text format.
   * `-T` : Tagged mode. Dumps the tagged contents.
   * `-O output_dir` : Output directory for extracted streams.
+
+### pdffonts.py
+
+pdffonts.py is used to extract font information from PDFs.
+
+    > pdffonts.py -P password input.pdf ...
 
 ## TODO
 

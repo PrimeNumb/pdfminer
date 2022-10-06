@@ -1,25 +1,15 @@
 #!/usr/bin/env python
 import logging
 import re
+from typing import Set, Tuple
+
+from .layout import (LTChar, LTContainer, LTCurve, LTFigure, LTImage, LTLine,
+                     LTPage, LTRect, LTText, LTTextBox, LTTextBoxVertical,
+                     LTTextGroup, LTTextLine)
 from .pdfdevice import PDFTextDevice
-from .pdffont import PDFUnicodeNotDefined
-from .layout import LTContainer
-from .layout import LTPage
-from .layout import LTText
-from .layout import LTLine
-from .layout import LTRect
-from .layout import LTCurve
-from .layout import LTFigure
-from .layout import LTImage
-from .layout import LTChar
-from .layout import LTTextLine
-from .layout import LTTextBox
-from .layout import LTTextBoxVertical
-from .layout import LTTextGroup
-from .utils import apply_matrix_pt
-from .utils import mult_matrix
-from .utils import q
-from .utils import bbox2str
+from .pdffont import (PDFCIDFont, PDFFont, PDFTrueTypeFont, PDFType1Font,
+                      PDFType3Font, PDFUnicodeNotDefined)
+from .utils import apply_matrix_pt, bbox2str, mult_matrix, q
 
 
 # PDFLayoutAnalyzer
@@ -593,3 +583,29 @@ class XMLConverter(PDFConverter):
     def close(self):
         self.write_footer()
         return
+
+
+class FontExtractor(PDFTextDevice):
+    def __init__(self):
+        super().__init__(self)
+        self._fontnames: Set[Tuple[str, str]] = set()
+        self.pageno = 1
+
+    def get_fontnames(self) -> Set[Tuple[str, str]]:
+        return self._fontnames
+
+    def get_font_type(self, font: PDFFont) -> str:
+        if isinstance(font, PDFType1Font):
+            return "Type 1"
+        elif isinstance(font, PDFTrueTypeFont):
+            return "TrueType"
+        elif isinstance(font, PDFType3Font):
+            return "Type 3"
+        elif isinstance(font, PDFCIDFont):
+            return "CID"
+
+        return "Unknown"
+
+    def render_char(self, matrix, font: PDFFont, fontsize, scaling, rise, cid):
+        self._fontnames.add((font.fontname, self.get_font_type(font)))
+        return super().render_char(matrix, font, fontsize, scaling, rise, cid)

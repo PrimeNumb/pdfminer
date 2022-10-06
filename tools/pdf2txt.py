@@ -37,6 +37,7 @@ class ConverterParams:
     caching: bool = True
     showpageno: bool = True
     get_chapters: bool = False
+    png_mode: bool = False
 
 
 class OutputType(Enum):
@@ -50,7 +51,7 @@ def _print_help_message(command: str = ""):
     print(f'usage: {command} [-P password] [-o output] [-t text|html|xml|tag]'
           ' [-O output_dir] [-c encoding] [-s scale] [-R rotation]'
           ' [-Y normal|loose|exact] [-p pagenos] [-m maxpages]'
-          ' [-S] [-C] [-n] [-A] [-V] [-h] [-M char_margin] [-L line_margin]'
+          ' [-S] [-C] [-n] [-A] [-X] [-V] [-h] [-M char_margin] [-L line_margin]'
           ' [-W word_margin] [-F boxes_flow] [-d] input.pdf ...')
 
 
@@ -68,47 +69,52 @@ def handle_input_variables(
 
     for (k, v) in options:
         if k == '-d':
-            ConverterParams.debug += 1
+            converter_params.debug += 1
         elif k == '-P':
-            ConverterParams.password = v.encode('ascii')
+            converter_params.password = v.encode('ascii')
         elif k == '-o':
             outfile = v
         elif k == '-t':
             outtype = OutputType(v)
         elif k == '-O':
-            ConverterParams.imagewriter = ImageWriter(v)
+            converter_params.imagewriter = ImageWriter(v)
         elif k == '-c':
-            ConverterParams.encoding = v
+            converter_params.encoding = v
         elif k == '-s':
-            ConverterParams.scale = float(v)
+            converter_params.scale = float(v)
         elif k == '-R':
-            ConverterParams.rotation = int(v)
+            converter_params.rotation = int(v)
         elif k == '-Y':
-            ConverterParams.layoutmode = v
+            converter_params.layoutmode = v
         elif k == '-p':
-            ConverterParams.pagenos.update(int(x) - 1 for x in v.split(','))
+            converter_params.pagenos.update(int(x) - 1 for x in v.split(','))
         elif k == '-m':
-            ConverterParams.maxpages = int(v)
+            converter_params.maxpages = int(v)
         elif k == '-S':
-            ConverterParams.stripcontrol = True
+            converter_params.stripcontrol = True
         elif k == '-C':
-            ConverterParams.caching = False
+            converter_params.caching = False
         elif k == '-n':
-            ConverterParams.laparams = None
+            converter_params.laparams = None
         elif k == '-A':
-            ConverterParams.laparams.all_texts = True
+            converter_params.laparams.all_texts = True
         elif k == '-V':
-            ConverterParams.laparams.detect_vertical = True
+            converter_params.laparams.detect_vertical = True
         elif k == '-M':
-            ConverterParams.laparams.char_margin = float(v)
+            converter_params.laparams.char_margin = float(v)
         elif k == '-W':
-            ConverterParams.laparams.word_margin = float(v)
+            converter_params.laparams.word_margin = float(v)
         elif k == '-L':
-            ConverterParams.laparams.line_margin = float(v)
+            converter_params.laparams.line_margin = float(v)
         elif k == '-F':
-            ConverterParams.laparams.boxes_flow = float(v)
+            converter_params.laparams.boxes_flow = float(v)
         elif k == '-h':
             ConverterParams.get_chapters = True
+        elif k == '-X':
+            converter_params.png_mode = True
+        
+        if converter_params.png_mode:
+            converter_params.imagewriter.set_png_mode()
 
     # Special considerations if the user wants to generate the book chapters as txt.
     if ConverterParams.get_chapters:
@@ -215,7 +221,7 @@ def main(argv):
     try:
         options, filenames = getopt.getopt(
             argv[1:],
-            'dP:o:t:O:c:s:R:Y:p:m:SCnAVM:W:L:F:h:'
+            'dP:o:t:O:c:s:R:Y:p:m:SCnAVXM:W:L:F:h:'
         )
         handle_input_variables(options, filenames)
     except getopt.GetoptError:
