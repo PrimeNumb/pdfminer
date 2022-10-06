@@ -19,7 +19,6 @@ class TestPdf2Text(unittest.TestCase):
 
     def setUp(self):
         self.path_simple1_pdf = [os.path.join(os.path.dirname(__file__), '../samples/simple1.pdf')]
-        ConverterParams.get_chapters = False
 
     def test_convert_from_pdf_text(self):
         expected_filename = os.path.join(

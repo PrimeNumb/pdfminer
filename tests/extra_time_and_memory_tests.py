@@ -21,7 +21,6 @@ class TestPDF2Text(unittest.TestCase):
 
     def setUp(self):
         self.path_simple1_pdf = [os.path.join(os.path.dirname(__file__), '../samples/simple1.pdf')]
-        ConverterParams.get_chapters = False
 
         self.course_book_txt_file = os.path.join(
             os.path.dirname(__file__),
@@ -95,3 +94,7 @@ class TestDumpPdf(unittest.TestCase):
         mp_wrapper = mp(dumppdf.get_chapters_from_outline)
         mp_wrapper(self.course_book_pdf_file)
         show_results(mp)
+
+
+if __name__ == '__main__':
+    unittest.main()

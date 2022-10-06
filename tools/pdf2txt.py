@@ -109,7 +109,7 @@ def handle_input_variables(
         elif k == '-F':
             converter_params.laparams.boxes_flow = float(v)
         elif k == '-h':
-            ConverterParams.get_chapters = True
+            converter_params.get_chapters = True
         elif k == '-X':
             converter_params.png_mode = True
         
@@ -117,7 +117,7 @@ def handle_input_variables(
             converter_params.imagewriter.set_png_mode()
 
     # Special considerations if the user wants to generate the book chapters as txt.
-    if ConverterParams.get_chapters:
+    if converter_params.get_chapters:
         chapters = split_by_chapters(filenames[0])
         write_chapters_to_files(chapters, outfile)
         return
