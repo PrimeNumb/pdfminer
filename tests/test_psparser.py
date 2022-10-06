@@ -94,7 +94,6 @@ func/a/b{(c)do*}def
         tokens = self.get_tokens(self.TESTDATA)
         self.assertEqual(tokens, self.TOKENS)
 
-
     def test_2(self):
         objs = self.get_objects(self.TESTDATA)
         self.assertEqual(objs, self.OBJS)
@@ -153,3 +152,4 @@ func/a/b{(c)do*}def
 
 if __name__ == '__main__':
     unittest.main() 
+
